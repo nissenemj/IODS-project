@@ -4,7 +4,7 @@
 *Write a short description about the course and add a link to your GitHub repository here. This is an R Markdown (.Rmd) file so you can use R Markdown syntax.*
 install.packages("rmarkdown")
 ---
-# Ensimmäinen haroitus
+# Ensimmäinen harjoitus
 
 Ensimmäisessä harjoituksessa installoitiin tarvittavat ohjelmat ja yhdistettiin verkkoympäristöön. Itselläni oli ongelmia saada __R-studio__ ja __GIT__ keskustelemaan keskenään ja tästä syystä jouduin tekemään installaatiot useaan otteeseen. Näiden ongelmien jälkeen pääsi harjoittelemaan __DATACAMP__ ympäristössä, mutta jostain syystä platform näkyy normaalia huomattavan pienenä ja en ole tätä vielä ratkaissut.
 
