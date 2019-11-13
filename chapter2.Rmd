@@ -10,7 +10,8 @@
 # Toinen harjoitus
 
 __DATA tuonti__
-data <- read.csv("learing_2019.csv")
+
+```{R}data <- read.csv("learing_2019.csv")
 
 #Summary
 summary(data)
@@ -28,9 +29,10 @@ p1 <- ggplot(data, aes(x = Attitude, y = Points, col = gender))
 p2 <- p1 + geom_point() + geom_smooth(method = "lm")
 p2
 
+```
 Tässä nähdään asenteen ja pisteiden suhde, joka näyttäytyy jyrkemmältä miehillä. 
 
-
+```{R}
 #Correlations
 
 p <- ggpairs(data, mapping = aes(col = gender, alpha = 0.3), lower = list(combo = wrap("facethist", bins = 20)))
@@ -42,7 +44,7 @@ my_model <- lm(Points ~ Attitude + Stra + Surf, data = data)
 # Summary of the model
 summary(my_model)
 
-
+```
 Residuals:
      Min       1Q   Median       3Q      Max 
 -17.1550  -3.4346   0.5156   3.6401  10.8952 
