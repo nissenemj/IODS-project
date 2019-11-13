@@ -3,14 +3,14 @@
 
 *Write a short description about the course and add a link to your GitHub repository here. This is an R Markdown (.Rmd) file so you can use R Markdown syntax.*
 
----
+
 # Ensimmäinen harjoitus
 
-Ensimmäisessä harjoituksessa installoitiin tarvittavat ohjelmat ja yhdistettiin verkkoympäristöön. Itselläni oli ongelmia saada __R-studio__ ja __GIT__ keskustelemaan keskenään ja tästä syystä jouduin tekemään installaatiot useaan otteeseen. Näiden ongelmien jälkeen pääsi harjoittelemaan __DATACAMP__ ympäristössä, mutta jostain syystä platform näkyy normaalia huomattavan pienenä ja en ole tätä vielä ratkaissut.
+*Ensimmäisessä harjoituksessa installoitiin tarvittavat ohjelmat ja yhdistettiin verkkoympäristöön. Itselläni oli ongelmia saada __R-studio__ ja __GIT__ keskustelemaan keskenään ja tästä syystä jouduin tekemään installaatiot useaan otteeseen. Näiden ongelmien jälkeen pääsi harjoittelemaan __DATACAMP__ ympäristössä, mutta jostain syystä platform näkyy normaalia huomattavan pienenä ja en ole tätä vielä ratkaissut.*
 
 ## R-Harjoitukset
 
-__R-Harjoituksissa__ käytiin läpi hyvin perus R-käyttöä, mutta hyvin nopeasti lopussa syöksyttiin funktioihin. Mielestäni tässä olisi ollut hyvä olla useampi _videoluento_ aiheesta. Jokatapauksessa erittäin mielenkintoinen konsepti. En ole ennen käyttänyt __GIT__ iä tai __Markdownia__ , joten näistäkin on hyvä saada kokemusta.
+*__R-Harjoituksissa__ käytiin läpi hyvin perus R-käyttöä, mutta hyvin nopeasti lopussa syöksyttiin funktioihin. Mielestäni tässä olisi ollut hyvä olla useampi _videoluento_ aiheesta. Jokatapauksessa erittäin mielenkintoinen konsepti. En ole ennen käyttänyt __GIT__ iä tai __Markdownia__ , joten näistäkin on hyvä saada kokemusta.*
 
 [Oma Git](https://github.com/nissenemj/IODS-project.git)
----
+
