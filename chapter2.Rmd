@@ -19,9 +19,9 @@ summary(data)
 
 #Access ggplot and GGally
 library(ggplot2)
-install.packages("ggplot2")
+
 library(GGally)
-install.packages("GGally")
+
 
 #Creating graphics
 p1 <- ggplot(data, aes(x = Attitude, y = Points, col = gender))
@@ -31,7 +31,7 @@ p2 <- p1 + geom_point() + geom_smooth(method = "lm")
 p2
 ```
 
-Tässä nähdään asenteen ja pisteiden suhde, joka näyttäytyy jyrkemmältä miehillä. 
+In these graphs we can see that gender plays a role. Biggest difference between genders seems to be on variable attitude, where females have a clearly lower mean. The distributions of the attitude and surf variables differ between males and females.
 
 ```{R}
 #Correlations
@@ -46,26 +46,9 @@ my_model <- lm(Points ~ Attitude + Stra + Surf, data = data)
 summary(my_model)
 
 ```
-Residuals:
-     Min       1Q   Median       3Q      Max 
--17.1550  -3.4346   0.5156   3.6401  10.8952 
-
-Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept) 11.01711    3.68375   2.991  0.00322 ** 
-Attitude     0.33952    0.05741   5.913 1.93e-08 ***
-Stra         0.85313    0.54159   1.575  0.11716    
-Surf        -0.58607    0.80138  -0.731  0.46563    
-
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-Residual standard error: 5.296 on 162 degrees of freedom
-Multiple R-squared:  0.2074,	Adjusted R-squared:  0.1927 
-F-statistic: 14.13 on 3 and 162 DF,  p-value: 3.156e-08
 
 
-Ainoastaan asenne on merkittävä tekijä luodussa mallissa. Sillä on positiivinen vaikutus pisteisiin. 20% pisteistä saadaan selitettyä käytetyllä kaavalla. 
-
+Only attitude seems to be siqnificant in this fitted model. The multiple R squared of the model is in this case simply the square of the regression between Attitude and Points. Since it is around 0,2, approximately 20% of the variation of points can be explained by the variation of Attitude.
 
 ```{R}
 # drawing diagnostic plots using the plot() function. Residuals vs Fitted values, Normal QQ-plot and Residuals vs Leverage.
@@ -74,6 +57,8 @@ par(mfrow = c(2,2))
 plot(my_model, which = c(1,2,5))
 
 ```
-Kuvista nähdään, että jakauma on varsin lineaarinen, ei merkittäviä outliereita.
+The assumptions of the model are that the error terms are approximately normally distributed with mean 0 and identical variation, uncorrelated and independent of the variable of interest. Specifically, the size of the error should not depend on the value of the explanatory or interesting variables.
+
+From these pictures it seems that the model assumptions are approximately correct, with the small exception of small and large values of Points corresponding to some larger deviation from the estimated mean. Also, a couple of observations seem to have somewhat large leverages, but overall the assumptions of the model seem to hold quite well. Questionable is the ends of the spectrum, and additional analysis is needed.
 
      
