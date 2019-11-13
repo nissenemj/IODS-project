@@ -66,12 +66,13 @@ F-statistic: 14.13 on 3 and 162 DF,  p-value: 3.156e-08
 Ainoastaan asenne on merkittävä tekijä luodussa mallissa. Sillä on positiivinen vaikutus pisteisiin. 20% pisteistä saadaan selitettyä käytetyllä kaavalla. 
 
 
-
+```{R}
 # drawing diagnostic plots using the plot() function. Residuals vs Fitted values, Normal QQ-plot and Residuals vs Leverage.
+
 par(mfrow = c(2,2))
 plot(my_model, which = c(1,2,5))
 
-
+```
 Kuvista nähdään, että jakauma on varsin lineaarinen, ei merkittäviä outliereita.
 
      
