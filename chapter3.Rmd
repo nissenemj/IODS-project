@@ -1,3 +1,7 @@
+# Työ 3
+
+# Exercise 3
+
 ---
 title: "chapter3.rmd"
 author: "Mette Nissen"
@@ -6,6 +10,8 @@ output: html_document
 ---
 Mette Nissen 15.9.2019 Exercise 3, analysis with student alcohol consumption.
 
+___Exercise 3___
+#Exercise 3
 
 [Data Wrangling](https://github.com/nissenemj/IODS-project/blob/master/data/Data_Wrangling_3.R)
 
