@@ -3,10 +3,14 @@
 stuDataPor <- read.csv("student-por.csv", header = TRUE, sep = ";")
 stuDataMat <- read.csv("student-mat.csv", header = TRUE, sep = ";")
 ?read.csv
+
+
 # access the dplyr library
+
 
 install.packages("dplyr")
 library(dplyr)
+
 
 # common columns to use as identifiers
 join_by <- c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet")

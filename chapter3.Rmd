@@ -4,27 +4,149 @@ author: "Mette Nissen"
 date: "11/15/2019"
 output: html_document
 ---
+Mette Nissen 15.9.2019 Exercise 3, analysis with student alcohol consumption.
 
-```{r setup, include=FALSE}
+
+[Data Wrangling](https://github.com/nissenemj/IODS-project/blob/master/data/Data_Wrangling_3.R)
+
+```{r}
+alc <- read.csv("alc.csv", header = TRUE, sep = ",")
+
+
+library(ggplot2)
+library(GGally)
+library(tidyverse)
+library(dplyr)
+library(knitr)
+
+```
+## Relationship between variables and high use
+
+I have taken variables gender, number of school abscences, going out with friends and final grade in the analysis. Hypothesis is that people performing poorly in school and missing classes are in higher risk of using more alcohol. 
+
+### Summary of variables 
+
+I also looked the summary and we can see that the mean age is 17 years. From the barchart we can see how high use is more common in men. THe next boxplot shows people having high use in alcohol going out in both genders. Also final grade seems to be lower. Using age as a function for abscences, we can see in the last figure how abscences seem to be higher in older men with high alcohol consumption. 
+
+Same things we can see from mean values. Group has 198 female and 184 male. Dividing groups with high use in females no high use vs high use is 156 and 42 respectevely and same numbers in men are 112 and 72, so higher proportion in men are high users. High use doesn´t affect final grade in female, but we can se a difference in grades in male students: 12.2 in non-high use group and 10.3 in high use group. Abscences are higher in both gender with high use and same is seen in going out with friends see tabels mean abscences and mean goout).
+
+```{R}
+
+#Summary of the datatable
+
+kable(summary(alc), digits = 2)
+
+# Graphs
+
+p <- ggpairs(alc, columns = c("sex", "absences","goout", "G3", "high_use"), mapping = aes(col = sex, alpha = 0.3), lower = list(combo = wrap("facethist", bins = 20)))
+p
+?ggpairs
+# initialize a barchart of alcohol use difference between genders
+g1 <- ggplot(data = alc, aes(x=sex)) + geom_bar() + facet_wrap("high_use") + ggtitle("Student alcohol consumption by sex")
+g1
+
+# initialize a plot of alcohol use and going out with friends
+g2 <- ggplot() + geom_boxplot(data = alc, aes(x = sex, y = goout)) + facet_wrap("high_use") + ggtitle("Student going out with friends by alcohol consumption and sex")
+g2
+
+# Boxplot of alcohol use and school final grade
+g3 <- ggplot() + geom_boxplot(data = alc, aes(x = sex, y = G3)) + facet_wrap("high_use") + ggtitle("Student final grades by alcohol consumption and sex")
+g3
+
+# Scatterplot showing linear model between age and abscences separated by alcohol consumption
+g4 <- ggplot(data = alc, aes(x = age, y = absences, color=sex, alpha = 0.3)) + geom_point() + facet_wrap("high_use")+ geom_jitter() + geom_smooth(method = "lm") + ggtitle("Student absences by alcohol consumption, sex and age")
+g4
+
+alc %>% group_by(sex) %>% summarise(count = n())
+alc %>% group_by(sex, high_use) %>% summarise(count = n(), mean_grade = mean(G3))
+alc %>% group_by(sex, high_use) %>% summarise(count = n(), mean_absences = mean(absences))
+alc %>% group_by(sex, high_use) %>% summarise(count = n(), mean_goout = mean(goout))
+
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+## Logistic regression model
 
-```{r cars}
-summary(cars)
+```{r}
+# glm() model
+m <- glm(high_use ~ absences + sex + goout, data = alc, family = "binomial")
+
+# the summary of the model
+summary(m)
+
+# the coefficients of the model
+coef(m)
+
+# the odds ratio (OR)
+OR <- coef(m) %>% exp
+
+# the confidence interval (CI)
+CI <- confint(m) %>% exp
+
+OR
+CI
+
+# printing out the odds ratios with their confidence intervals
+cbind(OR, CI)
 ```
 
-## Including Plots
+## Analysis of GLM
+From the model alone we can see that all other but G3 are statistically highly significant. Calculating OR and CI we can see that absences, male sex and going out have positive correlation and confidence interval staying above 1 stating significant correlation. In G3 correlation is negative and not significant. For the future predictions I am going to leave G3 from the model. 
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+## Prediction with the model
+
+```{R}
+# probability of high_use
+probabilities <- predict(m, type = "response")
+
+# adding the predicted probabilities to 'alc'
+alc <- mutate(alc, probability = probabilities)
+
+# using the probabilities to make a prediction of high_use
+alc <- mutate(alc, prediction = (probability > 0.5))
+
+# the last ten original classes, predicted probabilities, and class predictions
+select(alc, goout, absences, sex, high_use, probability, prediction) %>% tail(10)
+
+# target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+```
+The last ten cases show real values in high use TRUE 3 and FALSE 7. In the prediction these numbers are TRUE 1 and FALSE 9.
+
+## Model predictions in graphics
+
+```{R}
+# a plot of 'high_use' versus 'probability' in 'alc'
+pr <- ggplot(alc, aes(x = probability, y = high_use, col = prediction))
+pr2 <- pr + geom_point() + ggtitle("Predictions")
+pr2
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Cross validation
+
+Here is calculated the error of our model with cross-validation: 
+
+```{R}
+
+# the target variable versus the predictions
+table(high_use = alc$high_use, prediction = alc$prediction)%>%prop.table %>% addmargins
+
+# a loss function 
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+# loss_func to compute the average number of wrong predictions in the (training) data
+loss_func(class = alc$high_use, prob = alc$probability)
+```
+
+It seems that the wrong prediction proportion in this model 21% is smaller than 26% in the dataCamp exercise. 
+
+
