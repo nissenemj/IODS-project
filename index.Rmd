@@ -27,3 +27,8 @@ author: "Mette Nissen"
 ```
 
 ***
+
+```{r child = "chapter4.Rmd"}
+```
+
+***
