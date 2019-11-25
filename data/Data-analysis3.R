@@ -13,7 +13,8 @@ library(knitr)
 
 kable(summary(alc), digits = 2)
 
-
+# draw a bar plot of each variable
+gather(alc) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free")
 #Creating graphics
 p1 <- ggplot(alc, aes(x = absences, y = alc_use, col = sex)) + geom_point() 
 p1
