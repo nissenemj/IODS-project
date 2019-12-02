@@ -1,0 +1,148 @@
+---
+title: "Chapter 5"
+author: "Mette Nissen"
+date: "12/2/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Chapter 5. Dimensionality reduction techniques {.tabset}
+
+This week we are using human dataset from the United Nations Development Programme. From this dataset we have selected 8 variables wich are:
+country - Country
+Edu2.FM - secundry education rate female to male ratio
+Labo.FM - Labour force participation rate female to male ratio
+Life.Exp - Life expectancy at birth
+GNI - Gender Development Index 
+Mat.Mor - Maternal mortality ratio
+Ado.Birth - Adolescent birth rate
+Parli.F - Percent of female representation in Parliament
+
+## Data exploration
+
+```{r}
+human <- read.csv("data/human.csv", row.names = 1)
+
+library(GGally)
+library(tidyverse)
+library(corrplot)
+library(dplyr)
+library(knitr)
+library(corrplot)
+library(tidyr)
+library(reshape2)
+library(plotly)
+library(FactoMineR)
+library(ggplot2)
+
+
+str(human)
+summary(human)
+
+pairs <- ggpairs(human)
+pairs
+
+# compute the correlation matrix and visualize it with corrplot
+cor(human) %>% corrplot()
+```
+
+From the summary we can see that distributions differ between variables. GNI min is 680 and max is 123124 with comparison of Labo.FM with range of 0.1857-1.0380. In the dataset values are different. Correlation between variables differ from strongly positive correlation (maternal mortality - rate of adolescent women giving birth) to negative corelation (maternal mortality - life expectancy).
+
+## Principal component analysis (PCA) on the not standardized human data
+
+```{r}
+
+#PCA analysis
+pca_human <- prcomp(human)
+pca_human
+
+#Summary of principal component analysis
+s <- summary(pca_human)
+
+# rounded percentages of variance captured by each PC
+pca_pr <- round(100*s$importance[2,], digits = 1)
+
+# creating an object pc_lab to be used as axis labels
+pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
+
+# drawing a biplot of the principal component representation and the original variables
+biplot(pca_human, choices = 1:2, cex = c(0.8, 1), col = c("grey40", "deeppink"), xlab = pc_lab[1], ylab = pc_lab[2], main = (title = "PCA_non-scaled"))
+```
+
+From not scaled data pca is not useful because of large impact of GNI which has the largest SD and resulting first components 100% of variance. Therefore we must scale the data to make valid analysis. 
+
+## PCA on standardized data
+
+```{r}
+# standardize the variables
+human_std <- scale(human)
+summary(human_std)
+
+#PCA analysis with scaled variables
+pca_human_std <- prcomp(human_std)
+pca_human_std
+
+# rounded percentages of variance captured by each PC
+s_st <- summary(pca_human_std)
+pca_pr_st <- round(100*s_st$importance[2,], digits = 1)
+
+# creating an object pc_lab to be used as axis labels
+pc_lab_st <- paste0(names(pca_pr_st), " (", pca_pr_st, "%)")
+
+# drawing a biplot of the principal component representation and the original variables
+biplot(pca_human_std, choices = 1:2, cex = c(0.6, 0.8), col = c("grey40", "blue"), xlab = pc_lab_st[1], ylab = pc_lab_st[2], main = (title = "PCA_scaled"))
+```
+
+With scaling analysis shows a more reliable result. Rwanda seems to be an outlier in this 2-dimensional biplot. PC1 + PC2 are accounted for 68% of the variance which is quite a lot. 
+
+Arrow show similar effect in GII - gender inequality categories (labour and parliament) and  welfare categories (education, income, life expectancy and maternal health). Seeing the angles between these groups, it seems that they correlate quite well with each other.  
+
+## And now for somethin completely different - Tea
+
+```{r}
+data(tea)
+
+# What is tea all about
+
+dim(tea)
+str(tea)
+summary(tea)
+
+
+```
+
+Tea dataset includes 36 variables describing tea-taking habits with 300 observations. Most of the variables are strings and some are bimodal. This dataset is too large for a reasonable analysis and therefore I have picked variables with health attributes. 
+```{r}
+# column names to keep in the dataset
+keep_columns <- c("Tea", "sugar", "pub", "friends", "sport", "healthy", "effect.on.health", "slimming", "relaxing")
+
+# selecting the 'keep_columns' to create a new dataset
+tea_health <- select(tea, one_of(keep_columns))
+
+# look at the summaries and structure of the tea_health data
+summary(tea_health)
+str(tea_health)
+gather(tea_health) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+
+pairs <- ggpairs(tea_health)
+pairs
+
+```
+
+Most of the tea drinkers drink earl grey with friends. 210 think tea is healthy but only 66 think tea has an effect on health. Majority (187) think tea is relaxing. Sugar is used more often with Earl Grey
+
+```{r}
+
+# multiple correspondence analysis
+mca <- MCA(tea_health, graph = FALSE)
+# summary of the model
+summary(mca)
+# visualize MCA
+plot(mca, invisible=c("ind"), habillage = "quali")
+```
+
+With this analysis we can see that 31.275% of this models variance can be explained with the first 2 dimensions. It seems that social aspect is more affected by the Dim 2 and ohysical health with Dim 1. 
+According to minor clusters it seems that people drinking tea with friens use sugar and they think tea is relaxing compaired with people drinking tea without friends use black tea with no sugar. 
