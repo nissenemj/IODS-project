@@ -9,23 +9,257 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Chapter 5. Dimensionality reduction techniques {.tabset}
-## R Markdown
+# Chapter 6. Analysis of longitudinal data {.tabset}
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+library(dplyr)
+library(tidyr)
 ```
 
-## Including Plots
+###Load the data sets (BPRS and RATS)
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+BPRS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt", header = TRUE, sep = " ")
+RATS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt", header = TRUE, sep = '\t')
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+###Inspecting the WIDE data
+
+```{r}
+names(BPRS)
+names(RATS)
+
+summary(BPRS)
+summary(RATS)
+
+str(BPRS)
+str(RATS)
+```
+
+###Treatment weeks seems to be in different colums
+
+###Convert categorical data to factors - BPRS
+
+```{r}
+BPRS$treatment <- factor(BPRS$treatment)
+BPRS$subject <- factor(BPRS$subject)
+
+#BPRS to long form
+BPRSL <-  BPRS %>% gather(key = weeks, value = bprs, -treatment, -subject)
+
+# Extract the week number
+BPRSL <-  BPRSL %>% mutate(week = as.integer(substr(weeks, 5,5)))
+```
+
+
+### A glimpse at the BPRSL data
+```{r}
+glimpse(BPRSL)
+str(BPRS)
+```
+
+We now have a dataset with 360 observations and 5 variables -> long form
+
+And the same preparation to RATS
+
+```{r}
+# Convert categorical data to factors - RATS
+RATS$ID <- factor(RATS$ID)
+RATS$Group <- factor(RATS$Group)
+
+# Convert data to long form and extract the time
+
+RATSL <- RATS %>%
+  gather(key = WD, value = Weight, -ID, -Group) %>%
+  mutate(Time = as.integer(substr(WD, 3, 4))) 
+
+# A glimpse at the data
+glimpse(RATSL)
+str(RATSL)
+
+
+names(BPRSL)
+names(RATSL)
+```
+
+In the long form time is in one column and in  wide time variables are in different columns
+
+write.csv(RATSL, "data/rats_long.csv")
+write.csv(BPRSL, "data/bprs_long.csv")
+
+```{r}
+#Access the package ggplot2
+library(ggplot2)
+```
+
+##Exploring RATS and RATSL dataset
+
+```{r}
+glimpse(RATS)
+head(RATS)
+str(RATS)
+summary(RATS)
+
+
+glimpse(RATSL)
+head(RATSL)
+str(RATSL)
+summary(RATSL)
+```
+
+ From the Wide dataset we can see that we have 3 groups with Group 1 : 8 rats, Group 2 : 4 rats and Group 3 : 4 rats.
+ Weight is measured in 11 timepoints 7 WD apart. Overall weight seems to increase over time. 
+
+```{r}
+ggplot(RATSL, aes(x = Time, y = Weight, linetype = ID)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=8)) +
+  facet_grid(. ~ Group, labeller = label_both) +
+  theme(legend.position = "none") + 
+  scale_y_continuous(limits = c(min(RATSL$Weight), max(RATSL$Weight)))
+
+# Next weight is standardized with SD and same plot is drawn. 
+
+RATSL <- RATSL %>%
+  group_by(Time) %>%
+  mutate( stdWeight = (Weight - mean(Weight))/sd(Weight) ) %>%
+  ungroup()
+glimpse(RATSL)
+
+ggplot(RATSL, aes(x = Time, y = stdWeight, linetype = ID)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=8)) +
+  facet_grid(. ~ Group, labeller = label_both) +
+  theme(legend.position = "none") + 
+  scale_y_continuous(limits = c(min(RATSL$stdWeight), max(RATSL$stdWeight)))
+```
+
+Drawing the lines of individual rats within different groups over time. On X axis we have timepoints and on Y-axis we have weight in grams. 
+ Individuals are marked with a different linetype. Different groups are in separate graphs.  
+In this individual graph we can clearly see that the baseline is much lower in group 1. In group 2 is an outlier with higher starting weight which increases the total mean value.
+
+With standardization weight mean is 0 with SD of 1. Standardization is done by grouping by time, so the time variable doesn´t show similar trend as before. 
+
+
+##Combining individuals to a group mean
+
+```{r}
+RATSL2 <- RATSL
+RATSL2 <- within(RATSL2, {Time <- factor(Time)})
+RATSL2.aov <- aov(Weight ~ Group * Time + Error(ID), data = RATSL2)
+summary(RATSL2.aov)
+
+n <- RATSL$Time %>% unique() %>% length()
+RATSS <- RATSL %>%
+  group_by(Group, Time) %>%
+  summarise(mean = mean(Weight), se = sd(Weight)/sqrt(n) ) %>%
+  ungroup()
+glimpse(RATSS)
+```
+
+### Glimpse the data
+
+```{r}
+glimpse(RATSS)
+```
+
+
+### Plotting the mean profiles
+
+```{r}
+ggplot(RATSS, aes(x = Time, y = mean, linetype = Group, shape = Group)) +
+  geom_line() +
+  scale_linetype_manual(values = c(1:3)) +
+  geom_point(size=3) +
+  scale_shape_manual(values = c(1:3)) +
+  #geom_errorbar(aes(ymin=mean-se, ymax=mean+se, linetype="1"), width=0.3) +
+  theme(legend.position = c(0.8,0.8)) +
+  scale_y_continuous(name = "mean(rats) +/- se(rats)")
+```
+
+The between groups test indicates that the variable group is significant, 
+consequently in the graph we see that the lines for the three groups are rather far apart.
+The within subject test indicate that there is a significant time effect, 
+in other words, the groups show increase in weight over time. 
+The slopes of the lines are increasing in all groups. 
+One group starts at a lower mean of weight and increase over time seems to be less than in other two groups.
+
+From the previous graphs we could see already that group 2 has an outlier, but let us see that in better way - boxplot
+
+```{r}
+ggplot(RATSL2, aes(x = factor(Time), y = Weight, fill = Group)) + geom_boxplot(position = position_dodge(width = 0.9)) + scale_x_discrete(name = "Time") 
+
+RATSL8S <- RATSL %>%
+  filter(Time > 0) %>%
+  group_by(Group, ID) %>%
+  summarise(mean=mean(Weight) ) %>%
+  ungroup()
+```
+
+Glimpse the data
+```{r}
+glimpse(RATSL8S)
+```
+
+
+### Drawing a boxplot of the mean versus treatment
+
+```{r}
+ggplot(RATSL8S, aes(x = Group, y = mean)) +
+  geom_boxplot() +
+  stat_summary(fun.y = "mean", geom = "point", shape=23, size=4, fill = "white") +
+  scale_y_continuous(name = "mean(Weight), Days")
+```
+
+From the boxplot we can see the group 2 outlier clearly, but also in groups 1 and 3 are single outliers but they follow means trend. 
+For sciences sake let us make these groups smaller and filter outliers.
+
+```{r}
+RATSL8S1 <- RATSL8S %>%
+  filter(mean < 550)
+RATSL8S1 <- RATSL8S %>%
+  filter(mean > 240)
+RATSL8SG3 <- subset(RATSL8S, Group==3, select=c(Group, ID, mean)) %>%
+  filter(mean > 500)
+RATSL8SG12 <- subset(RATSL8S1, Group==1:2, select=c(Group, ID, mean))
+RATSL8S1 <- rbind(RATSL8SG12, RATSL8SG3)
+```
+
+### Drawing a boxplot without outliers of the mean versus Group
+
+```{r}
+ggplot(RATSL8S1, aes(x = Group, y = mean)) +
+  geom_boxplot() +
+  stat_summary(fun.y = "mean", geom = "point", shape=23, size=4, fill = "white") +
+  scale_y_continuous(name = "mean(Weight), Days")
+```
+
+
+Without outliers groupmeans are very different
+
+##ANOVA
+
+Next We use anova for analysis of variance, t-test canẗ be used because variables aren´t bimodal.
+
+```{r}
+fit1 <- lm(mean ~ Group, data = RATSL8S1)
+summary(fit1)
+anova(fit1)
+```
+
+Here we can see the group means signifiqant difference.
+
+Using baseline as a covariate to the model we can see if there is still difference ?
+
+```{r}
+baseline <- RATS$WD1
+RATSL8S2 <- RATSL8S %>%
+  mutate(baseline)
+fit2 <- lm(mean ~ baseline + Group, data = RATSL8S2)
+summary(fit2)
+anova(fit2)
+```
+
+Signifiqance was lost. So the baseline should be taken account choosing a treatment group. 
