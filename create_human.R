@@ -24,18 +24,18 @@ glimpse(gii)
 
 #Renaming variables and glimpsing the data again
 
-hd <- rename(hd, c("HDI.Rank"="rank", "Country"="country", "Human.Development.Index..HDI."="hdi", "Life.Expectancy.at.Birth"="lifeexp", "Expected.Years.of.Education"="expedu", "Mean.Years.of.Education"="meanedu", "Gross.National.Income..GNI..per.Capita"="gni", "GNI.per.Capita.Rank.Minus.HDI.Rank"="gni_hdi"))
+hd <- rename(hd, c("HDI.Rank"="rank", "Country"="country", "Human.Development.Index..HDI."="hdi", "Life.Expectancy.at.Birth"="Life.Exp", "Expected.Years.of.Education"="Edu.Exp", "Mean.Years.of.Education"="meanedu", "Gross.National.Income..GNI..per.Capita"="GNI", "GNI.per.Capita.Rank.Minus.HDI.Rank"="gni_hdi"))
 
 summary(hd)
 str(hd)
 
-gii <- rename(gii, c("GII.Rank"="gii_rank", "Country"="country", "Gender.Inequality.Index..GII."="gen_ii", "Maternal.Mortality.Ratio"="mmr", "Adolescent.Birth.Rate"="abr", "Percent.Representation.in.Parliament"="rep_parl", "Population.with.Secondary.Education..Female."="sec_edu_fem", "Population.with.Secondary.Education..Male."="sec_edu_male", "Labour.Force.Participation.Rate..Female."="lab_fem", "Labour.Force.Participation.Rate..Male."="lab_male"))
+gii <- rename(gii, c("GII.Rank"="gii_rank", "Country"="country", "Gender.Inequality.Index..GII."="gen_ii", "Maternal.Mortality.Ratio"="Mat.Mor", "Adolescent.Birth.Rate"="Ado.Birth", "Percent.Representation.in.Parliament"="Parli.F", "Population.with.Secondary.Education..Female."="sec_edu_fem", "Population.with.Secondary.Education..Male."="sec_edu_male", "Labour.Force.Participation.Rate..Female."="lab_fem", "Labour.Force.Participation.Rate..Male."="lab_male"))
 
 summary(gii)
 
 #Creating new variables
-gii <- mutate(gii, ratioedu=sec_edu_fem/sec_edu_male)
-gii <- mutate(gii, ratiolab=lab_fem/lab_male)
+gii <- mutate(gii, Edu2.FM=sec_edu_fem/sec_edu_male)
+gii <- mutate(gii, Labo.FM=lab_fem/lab_male)
 
 head(gii)
 
@@ -46,7 +46,7 @@ human <- inner_join(hd, gii, by = "country")
 str(human)
 
 # creating a file out 
-write.csv(human, file = "data/human.csv", row.names = FALSE)
+write.csv(human, file = "human.csv", row.names = FALSE)
 
 
 
