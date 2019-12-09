@@ -54,14 +54,6 @@ BPRSL <-  BPRSL %>% mutate(week = as.integer(substr(weeks, 5,5)))
 ```
 
 
-### A glimpse at the BPRSL data
-```{r}
-glimpse(BPRSL)
-str(BPRS)
-```
-
-We now have a dataset with 360 observations and 5 variables -> long form
-
 And the same preparation to RATS
 
 ```{r}
@@ -263,3 +255,80 @@ anova(fit2)
 ```
 
 Signifiqance was lost. So the baseline should be taken account choosing a treatment group. 
+
+##Season greetings from a mental institute
+
+The other dataset shows the brief psychiatric rating scale measurements from 40 males weekly for eight weeks. Subjecs were ramdomly selected to two treatment groups. 
+
+Wide and long form comparison was already done in the beginning of this exercise. All 40 subjects have 9 measurements so in the long set there are 360 measurements.
+
+### A glimpse at the BPRSL data
+
+```{r}
+glimpse(BPRSL)
+str(BPRS)
+```
+
+### Plotting groups, visualization
+
+```{r}
+ggplot(BPRSL, aes(x = week, y = bprs, linetype = subject)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ treatment, labeller = label_both) +
+  theme(legend.position = "none") + 
+  scale_y_continuous(limits = c(min(BPRSL$bprs), max(BPRSL$bprs)))
+```
+
+It seems like there is an declining trend in both groups but there is quite a lot of noice. We do need a way to build a model and analyse if treatments differe using BPRS points as a response variable. 
+
+###First a linear model
+
+```{r}
+fitbprs <- lm(bprs ~ treatment, data = BPRSL)
+summary(fitbprs)
+```
+This assumes independence of repeated measures, but this is not the case in repeated measures from same individuals, so we need to use appropriate models like the random intercept model which uses two explanatory variables (week and treatment) fits linear regression fit for each individual to differ in intercept from other individuals. BPRS scores doesn´t seem to correlate with the treatment.
+
+**The Random Intercept Model**
+```{r}
+library(lme4)
+BPRS_ref <- lmer(bprs ~ week + treatment + (1 | subject), data = BPRSL, REML = FALSE)
+summary(BPRS_ref)
+```
+\  
+
+Same type of result
+
+
+**Random intercept and random slope model**
+```{r}
+BPRS_ref1 <- lmer(bprs ~ week + treatment + (week | subject), data = BPRSL, REML = FALSE)
+summary(BPRS_ref1)
+anova(BPRS_ref1, BPRS_ref)
+```
+\  
+Model itself doesn´t bring much new information, but the model seems to fit better using anova test. 
+
+**Random Intercept and Random Slope Model with interaction**
+```{r}
+BPRS_ref2 <- lmer(bprs ~ week * treatment + (week | subject), data = BPRSL, REML = FALSE)
+summary(BPRS_ref2)
+anova(BPRS_ref1, BPRS_ref2)
+```
+
+```{r}
+p1 <- ggplot(BPRSL, aes(x = week, y = bprs, group=interaction(treatment, subject))) +
+  scale_x_continuous(name = "Week", breaks = seq(0, 60, 20)) +
+  scale_y_continuous(name = "bprs")
+p1 + geom_line()
+Fitted <- fitted(BPRS_ref2)
+BPRSL <- BPRSL %>%
+  mutate(Fitted)
+p2 <- ggplot(BPRSL, aes(x = week, y = Fitted, group=interaction(treatment, subject))) +
+  scale_x_continuous(name = "Week", breaks = seq(0, 60, 20)) +
+  scale_y_continuous(name = "bprs")
+p2 + geom_line()
+```
+
+Random Intercept and Random Slope Model with interaction seems to describe observations well.
