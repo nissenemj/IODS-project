@@ -473,8 +473,9 @@ BPRSL &lt;-  BPRS %&gt;% gather(key = weeks, value = bprs, -treatment, -subject)
 
 # Extract the week number
 BPRSL &lt;-  BPRSL %&gt;% mutate(week = as.integer(substr(weeks, 5,5)))</code></pre>
-<p>And the same preparation to RATS</p>
-<pre class="r"><code># Convert categorical data to factors - RATS
+<p>####And the same preparation to RATS</p>
+<pre class="r"><code># Convert categorical data to factors RATS
+
 RATS$ID &lt;- factor(RATS$ID)
 RATS$Group &lt;- factor(RATS$Group)
 
@@ -485,6 +486,7 @@ RATSL &lt;- RATS %&gt;%
   mutate(Time = as.integer(substr(WD, 3, 4))) 
 
 # A glimpse at the data
+
 glimpse(RATSL)</code></pre>
 <pre><code>## Observations: 176
 ## Variables: 5
@@ -500,8 +502,6 @@ glimpse(RATSL)</code></pre>
 ##  $ WD    : chr  &quot;WD1&quot; &quot;WD1&quot; &quot;WD1&quot; &quot;WD1&quot; ...
 ##  $ Weight: int  240 225 245 260 255 260 275 245 410 405 ...
 ##  $ Time  : int  1 1 1 1 1 1 1 1 1 1 ...</code></pre>
-<pre class="r"><code>names(BPRSL)</code></pre>
-<pre><code>## [1] &quot;treatment&quot; &quot;subject&quot;   &quot;weeks&quot;     &quot;bprs&quot;      &quot;week&quot;</code></pre>
 <pre class="r"><code>names(RATSL)</code></pre>
 <pre><code>## [1] &quot;ID&quot;     &quot;Group&quot;  &quot;WD&quot;     &quot;Weight&quot; &quot;Time&quot;</code></pre>
 <p>In the long form time is in one column and in wide time variables are in different columns</p>

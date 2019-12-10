@@ -38,7 +38,7 @@ author: "Mette Nissen"
 
 ***
 
-```{r child = "Chapter6.Rmd"}
+```{r child = "Chapter61.Rmd"}
 ```
 
 ***

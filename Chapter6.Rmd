@@ -53,11 +53,11 @@ BPRSL <-  BPRS %>% gather(key = weeks, value = bprs, -treatment, -subject)
 BPRSL <-  BPRSL %>% mutate(week = as.integer(substr(weeks, 5,5)))
 ```
 
-
-And the same preparation to RATS
+####And the same preparation to RATS
 
 ```{r}
-# Convert categorical data to factors - RATS
+# Convert categorical data to factors RATS
+
 RATS$ID <- factor(RATS$ID)
 RATS$Group <- factor(RATS$Group)
 
@@ -68,11 +68,9 @@ RATSL <- RATS %>%
   mutate(Time = as.integer(substr(WD, 3, 4))) 
 
 # A glimpse at the data
+
 glimpse(RATSL)
 str(RATSL)
-
-
-names(BPRSL)
 names(RATSL)
 ```
 
